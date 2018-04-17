@@ -1,0 +1,8 @@
+# top-most EditorConfig file
+root = true
+
+[*]
+indent_style = space
+
+[*.md]
+trim_trailing_whitespace = false

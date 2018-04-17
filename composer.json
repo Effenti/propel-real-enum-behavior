@@ -1,0 +1,30 @@
+{
+  "name": "effenti/propel-real-enum-behavior",
+  "version": "1.0.2",
+  "description": "Propel 2 behavior to manage the ENUM type more closely to what enums should be",
+  "authors": [
+    {
+      "name": "Maxime Bélanger",
+      "email": "mbelanger@effenti.ca"
+    }
+  ],
+  "license": "MIT",
+  "support":{
+    "email": "support@effenti.ca"
+  },
+  "require": {
+    "propel/propel": "~2.0@dev"
+  },
+  "type" : "propel-behavior",
+  "extra": {
+    "name": "real-enum",
+    "class": "\\Effenti\\Propel\\Behavior\\RealEnumBehavior"
+  },
+  "autoload":{
+    "psr-4": {
+      "Effenti\\Propel\\Behavior\\":[
+        "src"
+      ]
+    }
+  }
+}
