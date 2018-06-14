@@ -30,7 +30,7 @@ class RealEnumBehavior extends Behavior{
                 $column->setType('ENUM');
                 foreach($column->getValueSet() as $value){
                     $attributes .= '
-const '. $column->getUppercasedName() . '_' . strtoupper($value) . " = '$value';";
+const '. $column->getUppercasedName() . '_' . preg_replace('/\s+/', '_', strtoupper($value)) . " = '$value';";
                 }
             }
         }
