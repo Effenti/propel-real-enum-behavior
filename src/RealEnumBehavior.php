@@ -27,7 +27,6 @@ class RealEnumBehavior extends Behavior{
 
         foreach($this->getTable()->getColumns() as $column){
             if($column->getDomain()->getDescription() == 'RealEnum'){
-                $column->setType('ENUM');
                 foreach($column->getValueSet() as $value){
                     $attributes .= '
 const '. $column->getUppercasedName() . '_' . preg_replace('/\s+/', '_', strtoupper($value)) . " = '$value';";
@@ -36,6 +35,59 @@ const '. $column->getUppercasedName() . '_' . preg_replace('/\s+/', '_', strtoup
         }
 
         return $attributes;
+    }
+
+    public function staticAttributes(){
+        $attributes = "/** The enumerated values for the method field */
+";
+        $valueSets = "
+/** The enumerated values for this table */
+protected static \$enumValueSets = array(
+";
+
+        foreach($this->getTable()->getColumns() as $column){
+            if($column->getDomain()->getDescription() == 'RealEnum'){
+                $valueSets .= "    {$this->getTable()->getPhpName()}TableMap::{$column->getConstantName()} => array(
+";
+                foreach($column->getValueSet() as $value){
+                    $valueConstant = $column->getConstantName() . '_' . preg_replace('/\s+/', '_', strtoupper($value));
+                    $attributes .= "const {$valueConstant} = '{$value}';
+";
+                    $valueSets .= "        self::{$valueConstant},
+";
+                }
+                $valueSets .= "    ),
+";
+            }
+        }
+
+        $valueSets .= ");
+";
+
+        return $attributes.$valueSets;
+    }
+
+    public function staticMethods(){
+        return '/**
+ * Gets the list of values for all ENUM and SET columns
+ * @return array
+ */
+public static function getValueSets()
+{
+    return static::$enumValueSets;
+}
+
+/**
+ * Gets the list of values for an ENUM or SET column
+ * @param string $colname
+ * @return array list of possible values for the column
+ */
+public static function getValueSet($colname)
+{
+    $valueSets = self::getValueSets();
+
+    return $valueSets[$colname];
+}';
     }
 
     public function queryMethods(){
