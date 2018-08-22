@@ -6,7 +6,8 @@ use Propel\Generator\Builder\Om\TableMapBuilder;
 use Propel\Generator\Model\Behavior;
 use Propel\Generator\Util\PhpParser;
 
-class RealEnumBehavior extends Behavior{
+class RealEnumBehavior extends Behavior {
+    private $hasRealEnum = false;
 
     public function modifyTable(){
         foreach($this->getTable()->getColumns() as $column){
@@ -19,6 +20,8 @@ class RealEnumBehavior extends Behavior{
                 $column->getDomain()->setSqlType(substr($sqlType, 0, -1).')');
                 $column->getDomain()->setType("VARCHAR");
                 $column->getDomain()->setDescription("RealEnum");
+
+                $this->hasRealEnum = true;
             }
         }
     }
@@ -41,7 +44,7 @@ const '. $column->getUppercasedName() . '_' . preg_replace('/\s+/', '_', strtoup
     public function staticAttributes($builder){
         $attributes = '';
         $valueSets = '';
-        if($builder instanceof TableMapBuilder){
+        if($builder instanceof TableMapBuilder && $this->hasRealEnum){
             $attributes = "/** The enumerated values for the method field */
 ";
             $valueSets = "
@@ -73,7 +76,7 @@ protected static \$enumValueSets = array(
 
     public function staticMethods($builder){
         $methods = '';
-        if($builder instanceof TableMapBuilder) {
+        if($builder instanceof TableMapBuilder && $this->hasRealEnum) {
             $methods = '/**
  * Gets the list of values for all ENUM and SET columns
  * @return array
@@ -99,7 +102,9 @@ public static function getValueSet($colname)
     }
 
     public function queryMethods(){
-        return "
+        $methods = '';
+        if ($this->hasRealEnum) {
+            $methods = "
 /**
  * Converts value for some column types
  *
@@ -115,6 +120,8 @@ protected function convertValueForColumn(\$value, \\Propel\\Runtime\\Map\\Column
         return parent::convertValueForColumn(\$value, \$colMap);
     }
 }";
+        }
+        return $methods;
     }
 
     public function objectFilter(&$script){
