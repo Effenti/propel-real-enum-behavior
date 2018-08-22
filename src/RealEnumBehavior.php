@@ -2,6 +2,7 @@
 
 namespace Effenti\Propel\Behavior;
 
+use Propel\Generator\Builder\Om\TableMapBuilder;
 use Propel\Generator\Model\Behavior;
 use Propel\Generator\Util\PhpParser;
 
@@ -37,38 +38,43 @@ const '. $column->getUppercasedName() . '_' . preg_replace('/\s+/', '_', strtoup
         return $attributes;
     }
 
-    public function staticAttributes(){
-        $attributes = "/** The enumerated values for the method field */
+    public function staticAttributes($builder){
+        $attributes = '';
+        $valueSets = '';
+        if($builder instanceof TableMapBuilder){
+            $attributes = "/** The enumerated values for the method field */
 ";
-        $valueSets = "
+            $valueSets = "
 /** The enumerated values for this table */
 protected static \$enumValueSets = array(
 ";
 
-        foreach($this->getTable()->getColumns() as $column){
-            if($column->getDomain()->getDescription() == 'RealEnum'){
-                $valueSets .= "    {$this->getTable()->getPhpName()}TableMap::{$column->getConstantName()} => array(
+            foreach($this->getTable()->getColumns() as $column){
+                if($column->getDomain()->getDescription() == 'RealEnum'){
+                    $valueSets .= "    {$this->getTable()->getPhpName()}TableMap::{$column->getConstantName()} => array(
 ";
-                foreach($column->getValueSet() as $value){
-                    $valueConstant = $column->getConstantName() . '_' . preg_replace('/\s+/', '_', strtoupper($value));
-                    $attributes .= "const {$valueConstant} = '{$value}';
+                    foreach($column->getValueSet() as $value){
+                        $valueConstant = $column->getConstantName() . '_' . preg_replace('/\s+/', '_', strtoupper($value));
+                        $attributes .= "const {$valueConstant} = '{$value}';
 ";
-                    $valueSets .= "        self::{$valueConstant},
+                        $valueSets .= "        self::{$valueConstant},
+";
+                    }
+                    $valueSets .= "    ),
 ";
                 }
-                $valueSets .= "    ),
-";
             }
-        }
 
-        $valueSets .= ");
+            $valueSets .= ");
 ";
-
+        }
         return $attributes.$valueSets;
     }
 
-    public function staticMethods(){
-        return '/**
+    public function staticMethods($builder){
+        $methods = '';
+        if($builder instanceof TableMapBuilder) {
+            $methods = '/**
  * Gets the list of values for all ENUM and SET columns
  * @return array
  */
@@ -88,6 +94,8 @@ public static function getValueSet($colname)
 
     return $valueSets[$colname];
 }';
+        }
+        return $methods;
     }
 
     public function queryMethods(){
