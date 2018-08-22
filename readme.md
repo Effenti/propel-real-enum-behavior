@@ -1,5 +1,9 @@
 # Propel Real Enum Behavior
 
+[![Latest Stable Version](https://poser.pugx.org/effenti/propel-real-enum-behavior/v/stable)](https://packagist.org/packages/effenti/propel-real-enum-behavior)
+[![Total Downloads](https://poser.pugx.org/effenti/propel-real-enum-behavior/downloads)](https://packagist.org/packages/effenti/propel-real-enum-behavior)
+[![License](https://poser.pugx.org/effenti/propel-real-enum-behavior/license)](https://packagist.org/packages/effenti/propel-real-enum-behavior)
+
 ## Requirements
 
 This Behavior was developed for **Propel 2**.  
