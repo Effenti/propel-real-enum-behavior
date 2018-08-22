@@ -12,8 +12,7 @@ composer require effenti/propel-real-enum-behavior
 ```
 
 #### schema.xml
-Add the behavior either to the root of your database or on the target table.  
-You also need to specify the `phpType` property to `string` on you enum columns.  
+Add the behavior either to the root of your database or on the target table.   
 Here is an example :
 
 ```XML
@@ -21,7 +20,7 @@ Here is an example :
     <!-- This will add the real-enum behavior for all enums in the database -->
     <behavior name="real-enum"/>
     <table name="my_table">        
-        <column name="my_enum" type="ENUM" valueSet="FIRST,SECOND,THIRD" phpType="string"/>
+        <column name="my_enum" type="ENUM" valueSet="FIRST,SECOND,THIRD" />
     </table>
 </database>
 ```

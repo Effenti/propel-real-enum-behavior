@@ -1,6 +1,6 @@
 {
   "name": "effenti/propel-real-enum-behavior",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Propel 2 behavior to manage the ENUM type more closely to what enums should be",
   "authors": [
     {
