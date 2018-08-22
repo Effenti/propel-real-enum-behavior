@@ -2,10 +2,12 @@
 
 namespace Effenti\Propel\Behavior;
 
+use Propel\Generator\Builder\Om\TableMapBuilder;
 use Propel\Generator\Model\Behavior;
 use Propel\Generator\Util\PhpParser;
 
-class RealEnumBehavior extends Behavior{
+class RealEnumBehavior extends Behavior {
+    private $hasRealEnum = false;
 
     public function modifyTable(){
         foreach($this->getTable()->getColumns() as $column){
@@ -18,6 +20,8 @@ class RealEnumBehavior extends Behavior{
                 $column->getDomain()->setSqlType(substr($sqlType, 0, -1).')');
                 $column->getDomain()->setType("VARCHAR");
                 $column->getDomain()->setDescription("RealEnum");
+
+                $this->hasRealEnum = true;
             }
         }
     }
@@ -27,7 +31,6 @@ class RealEnumBehavior extends Behavior{
 
         foreach($this->getTable()->getColumns() as $column){
             if($column->getDomain()->getDescription() == 'RealEnum'){
-                $column->setType('ENUM');
                 foreach($column->getValueSet() as $value){
                     $attributes .= '
 const '. $column->getUppercasedName() . '_' . preg_replace('/\s+/', '_', strtoupper($value)) . " = '$value';";
@@ -38,8 +41,70 @@ const '. $column->getUppercasedName() . '_' . preg_replace('/\s+/', '_', strtoup
         return $attributes;
     }
 
+    public function staticAttributes($builder){
+        $attributes = '';
+        $valueSets = '';
+        if($builder instanceof TableMapBuilder && $this->hasRealEnum){
+            $attributes = "/** The enumerated values for the method field */
+";
+            $valueSets = "
+/** The enumerated values for this table */
+protected static \$enumValueSets = array(
+";
+
+            foreach($this->getTable()->getColumns() as $column){
+                if($column->getDomain()->getDescription() == 'RealEnum'){
+                    $valueSets .= "    {$this->getTable()->getPhpName()}TableMap::{$column->getConstantName()} => array(
+";
+                    foreach($column->getValueSet() as $value){
+                        $valueConstant = $column->getConstantName() . '_' . preg_replace('/\s+/', '_', strtoupper($value));
+                        $attributes .= "const {$valueConstant} = '{$value}';
+";
+                        $valueSets .= "        self::{$valueConstant},
+";
+                    }
+                    $valueSets .= "    ),
+";
+                }
+            }
+
+            $valueSets .= ");
+";
+        }
+        return $attributes.$valueSets;
+    }
+
+    public function staticMethods($builder){
+        $methods = '';
+        if($builder instanceof TableMapBuilder && $this->hasRealEnum) {
+            $methods = '/**
+ * Gets the list of values for all ENUM and SET columns
+ * @return array
+ */
+public static function getValueSets()
+{
+    return static::$enumValueSets;
+}
+
+/**
+ * Gets the list of values for an ENUM or SET column
+ * @param string $colname
+ * @return array list of possible values for the column
+ */
+public static function getValueSet($colname)
+{
+    $valueSets = self::getValueSets();
+
+    return $valueSets[$colname];
+}';
+        }
+        return $methods;
+    }
+
     public function queryMethods(){
-        return "
+        $methods = '';
+        if ($this->hasRealEnum) {
+            $methods = "
 /**
  * Converts value for some column types
  *
@@ -55,6 +120,8 @@ protected function convertValueForColumn(\$value, \\Propel\\Runtime\\Map\\Column
         return parent::convertValueForColumn(\$value, \$colMap);
     }
 }";
+        }
+        return $methods;
     }
 
     public function objectFilter(&$script){
